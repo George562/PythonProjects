@@ -27,6 +27,7 @@ class Cube:  # объект
 
 class Scale:  # ползунок меняешь, меняется значение переменной
     def __init__(self, win, x, y, pos, start, stop, step, name):
+        self.win = win
         self.name = font(name)
         self.w = 230
         self.h = 30
