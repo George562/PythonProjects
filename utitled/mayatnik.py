@@ -69,7 +69,7 @@ def prugina(win, obj, k, dT):  # функция считает
             obj.a[0] = 0
             obj.v[0] = 0
         else:
-            obj.a[0] = -(obj.gamma*obj.v[0]/10+k*(obj.pos[0]-obj.pos0[0])/500)/obj.mass
+            obj.a[0] = -(obj.gamma*obj.v[0]+k*(obj.pos[0]-obj.pos0[0]))/obj.mass
             obj.v[0] += obj.a[0]*dT
             obj.pos[0] += obj.v[0]*dT
     else:  # в вертикальном положении с g
@@ -83,7 +83,7 @@ def prugina(win, obj, k, dT):  # функция считает
             obj.a[1] = 0
             obj.v[1] = 0
         else:
-            obj.a[1] = -(obj.gamma*obj.v[1]/10+k*(obj.pos[1]-obj.pos0[1])/500)/obj.mass+g
+            obj.a[1] = -(obj.gamma*obj.v[1]+k*(obj.pos[1]-obj.pos0[1]))/obj.mass+g
             obj.v[1] += obj.a[1]*dT
             obj.pos[1] += obj.v[1]*dT
 
