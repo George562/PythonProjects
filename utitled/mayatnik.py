@@ -64,7 +64,7 @@ def prugina(win, obj, k, dT):  # функция считает
         pg.draw.line(win, white, (550, 0), (550, 650))  # положение равновесия
         for i in range(31):
             pg.draw.circle(win, white, (30+int(i*(obj.pos[0]-30)/30), 300+int(60*math.sin(i*math.pi/6))), 6)
-        if pg.mouse.get_pressed()[0] and not (x >= scale_x-25 and y >= scale_y-25):
+        if pg.mouse.get_pressed()[0] and not (x >= scale_x-25 and y >= scale_y-25):  # менять положение объекта
             obj.pos[0] = x
             obj.a[0] = 0
             obj.v[0] = 0
@@ -74,8 +74,8 @@ def prugina(win, obj, k, dT):  # функция считает
             obj.pos[0] += obj.v[0]*dT
     else:  # в вертикальном положении с g
         pg.draw.rect(win, white, (520, 5, 60, 25))  # основание пружины
-        pg.draw.line(win, (255, 0, 255), (0, 350), (1300, 350))  # положение равновесия без учета g
-        pg.draw.line(win, white, (0, 350+(g*obj.mass/k)*500), (1300, 350+(g*obj.mass/k)*500))  # положение равновесия
+        pg.draw.line(win, (255, 0, 255), (0, 350), (1300, 350))  # положение равновесия без g
+        pg.draw.line(win, white, (0, 350+(g*obj.mass/k)*500), (1300, 350+(g*obj.mass/k)*500))  # с g
         for i in range(25):
             pg.draw.circle(win, white, (550+int(60*math.sin(i*math.pi/6)), 30+int(i*(obj.pos[1]-30)/24)), 6)
         if pg.mouse.get_pressed()[0] and not (x >= scale_x-25 and y >= scale_y-25):  # менять положение объекта
@@ -88,19 +88,19 @@ def prugina(win, obj, k, dT):  # функция считает
             obj.pos[1] += obj.v[1]*dT
 
 
-screen = pg.display.set_mode((1300, 650))  # рабочая область
-pg.display.set_caption('Маятник')  # название меняю
-horizont = True  # горизонтально пружина расположенна или нет
-g = 9.81  # ускорение свободного пажения
+screen = pg.display.set_mode((1300, 650))  # рабочая область (ширина, высота)
+pg.display.set_caption('Маятник')  # название приложения
+horizont = True  # горизонтально расположенна пружина или нет
+g = 9.81  # ускорение свободного падения
 k = 100  # упругость пружины
 dT = 0.01  # период измерений
 
-cube = Cube(screen, horizont)
+cube = Cube(screen, horizont)  # наш объект
 clock = pg.time.Clock()
 
 # все шкалы
-scale_x = 1050
-scale_y = 400
+scale_x = 1050  # крайняя левая точка размещения шкал
+scale_y = 400  # крайняя верхняя точка размещения шкал
 scale_of_mass = Scale(screen, scale_x, scale_y, cube.mass, 1, 70, 1, 'mass')
 scale_of_gamma = Scale(screen, scale_x, scale_y+40, cube.gamma, 0, 5.6, 0.1, 'gamma')
 scale_of_g = Scale(screen, scale_x, scale_y+80, g, 0, 14, 0.01, 'g')
@@ -108,28 +108,28 @@ scale_of_k = Scale(screen, scale_x, scale_y+120, k, 1, 1400, 5, 'k')
 
 done = False
 while not done:
-    screen.fill((0, 0, 0))  # закрашиваю все черным
+    screen.fill((0, 0, 0))  # закрашиваю экран черным
     cube.draw()
     prugina(screen, cube, k, dT)
     if pg.mouse.get_pressed()[0]:
         cube.mass = scale_of_mass.update(*pg.mouse.get_pos())
         cube.gamma = scale_of_gamma.update(*pg.mouse.get_pos())
         k = scale_of_k.update(*pg.mouse.get_pos())
-        if not horizont:  # если в вертикальном положении можно менять ускорение
+        if not horizont:  # если в вертикальном положении можно менять g
             g = scale_of_g.update(*pg.mouse.get_pos())
     scale_of_mass.draw()
     scale_of_gamma.draw()
     scale_of_k.draw()
-    if not horizont:  # если в вертикальном положении рисую шкалу ускорения
+    if not horizont:  # и рисовать ползунок
         scale_of_g.draw()
     for event in pg.event.get():  # проверяю все события
         if event.type == pg.QUIT:  # закрыть приложение на крестик
             done = True
         elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_TAB:  # переход между горизонтальной и вертикальной пружинами
+            if event.key == pg.K_TAB:  # на TAB менять положение пружины
                 horizont = not horizont
                 cube = Cube(screen, horizont, cube.mass, cube.gamma)
-            elif event.key == pg.K_SPACE:  # сбрасываю всё к дефолту
+            elif event.key == pg.K_SPACE:  # выставляю значения дефолту
                 cube = Cube(screen, horizont)
                 g = 9.81
                 k = 100
@@ -137,5 +137,5 @@ while not done:
                 scale_of_gamma = Scale(screen, scale_x, scale_y + 40, cube.gamma, 0, 5.6, 0.1, 'gamma')
                 scale_of_g = Scale(screen, scale_x, scale_y + 80, g, 0, 14, 0.01, 'g')
                 scale_of_k = Scale(screen, scale_x, scale_y + 120, k, 1, 1400, 5, 'k')
-    pg.display.flip()  # обновляю экран
+    pg.display.flip()  # обновляум экран
     clock.tick(100)  # скорость обновления экрана
