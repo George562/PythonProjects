@@ -12,44 +12,45 @@ my_fonts = {}  # used fonts
 
 
 def font_return(size, text, font='verdana'):
-    if font not in my_fonts.keys():
+    if font not in my_fonts.keys():  # if font not in list, add it
         my_fonts[font] = [pg.font.SysFont(font, i) for i in range(5, 46)]
     return my_fonts[font][size].render(str(text), True, white)
 
 
 class Scale:
-    w = 180
-    h = 20
+    w = 180  # width
+    h = 20  # height
 
-    def __init__(self, win, x, y, pos, start, stop, step, name):
-        self.win = win
-        self.name = font_return(18, name, 'verdana')
-        self.x = x
-        self.y = y
-        self.scalar = self.x+int((self.w-10)*(pos-start)/(stop-start))+5
-        self.number = pos
-        self.start = start
-        self.stop = stop
-        self.step = step
+    def __init__(self, win, x, y, pos, start, stop, step, name=''):
+        self.win = win  # place for draw
+        self.name = font_return(18, name, 'verdana')  # self name
+        self.x = x  # x coordinate
+        self.y = y  # y coordinate
+        self.scalar = self.x+int((self.w-10)*(pos-start)/(stop-start))+5  # pos of slider
+        self.value = pos  # present value
+        self.start = start  # minimum value
+        self.stop = stop  # maximum value
+        self.step = step  # value step
         self.name_x = self.x-self.name.get_width()-15
         self.name_y = self.y
-        self.default = (win, x, y, pos, start, stop, step, name)
+        self.default = (win, x, y, pos, start, stop, step, name)  # default parameters
 
     def draw(self):
         self.win.blit(self.name, [self.name_x, self.name_y])
-        self.win.blit(font_return(18, self.number, 'verdana'), [self.x + self.w + 15, self.name_y])
-        pg.draw.rect(self.win, yellow, (self.x-10, self.y-3, self.w+20, self.h+9))
-        pg.draw.line(self.win, white, (self.x+5, self.y+self.h//2), (self.x+self.w-5, self.y+self.h//2), 4)
-        pg.draw.circle(self.win, red, (self.scalar, self.y+self.h//2+1), 10)
+        self.win.blit(font_return(18, self.value, 'verdana'), [self.x + self.w + 15, self.name_y])
+        pg.draw.rect(self.win, yellow, (self.x-10, self.y-3, self.w+20, self.h+9))  # back
+        pg.draw.line(self.win, white, (self.x, self.y+self.h//2),
+                     (self.x+self.w, self.y+self.h//2), 4)  # slider line
+        pg.draw.circle(self.win, red, (self.scalar, self.y+self.h//2+1), 10)  # slider
 
     def update(self, x, y):  # update external value
         if self.x <= x <= self.x+self.w and self.y <= y <= self.y+self.h:
-            self.number = (x-self.x)/self.w*(self.stop-self.start)+self.start
-            self.number = round(self.number-self.number % self.step, 4)
-            self.scalar = round(self.x+self.w*self.number/(self.stop-self.start))
-        if not self.number % 1:
-            self.number = int(self.number)
-        return self.number
+            self.value = (x-self.x)/self.w*(self.stop-self.start)+self.start
+            self.value = round(self.value-self.value % self.step, 4)
+            self.scalar = round(self.x+self.w*self.value/(self.stop-self.start))
+        if not self.value % 1:
+            self.value = int(self.value)
+        return self.value
 
 
 class Cube:  # объект
@@ -99,7 +100,7 @@ pg.display.set_caption('Маятник')  # название приложени�
 horizont = True  # горизонтально расположенна пружина или нет
 g = 9.81  # ускорение свободного падения
 k = 100  # упругость пружины
-dT = 0.01  # период измерений
+dT = 0.005  # период измерений
 
 cube = Cube(screen, horizont)  # наш объект
 clock = pg.time.Clock()
