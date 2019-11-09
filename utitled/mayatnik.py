@@ -47,13 +47,12 @@ class Scale:
             self.number = (x-self.x)/self.w*(self.stop-self.start)+self.start
             self.number = round(self.number-self.number % self.step, 4)
             self.scalar = round(self.x+self.w*self.number/(self.stop-self.start))
-            if not self.number % 1:
-                self.number = int(self.number)
-            return self.number
-        return None
+        if not self.number % 1:
+            self.number = int(self.number)
+        return self.number
 
 
-class Cube:  # object
+class Cube:  # объект
     def __init__(self, win, hor, mass=None, gamma=None):
         self.win = win
         self.pos0 = [550, 300 if hor else 350]  # начальное положение
@@ -121,10 +120,12 @@ while not done:
     prugina(screen, cube, k, dT)
     if pg.mouse.get_pressed()[0]:
         m_pos = pg.mouse.get_pos()
-        cube.mass = scale_of_mass.update(*m_pos) or cube.mass
-        cube.gamma = scale_of_gamma.update(*m_pos) or cube.gamma
-        k = scale_of_k.update(*m_pos) or k
-        cube.mass = scale_of_small_mass.update(*m_pos) or cube.mass
+        if scale_of_mass.y <= m_pos[1] <= scale_of_mass.y+Scale.h:
+            cube.mass = scale_of_mass.update(*m_pos)
+        elif scale_of_small_mass.y <= m_pos[1] <= scale_of_small_mass.y+Scale.h:
+            cube.mass = scale_of_small_mass.update(*m_pos)
+        cube.gamma = scale_of_gamma.update(*m_pos)
+        k = scale_of_k.update(*m_pos)
         if not horizont:  # если в вертикальном положении, то можно менять g
             g = scale_of_g.update(*m_pos) or g
     scale_of_mass.draw()
