@@ -149,5 +149,5 @@ while not done:
                 scale_of_g.__init__(*scale_of_g.default)
                 scale_of_k.__init__(*scale_of_k.default)
                 scale_of_small_mass.__init__(*scale_of_small_mass.default)
-    pg.display.flip()  # обновляум экран
+    pg.display.flip()  # обновляем экран
     clock.tick(100)  # скорость обновления экрана
