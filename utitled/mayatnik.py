@@ -53,7 +53,7 @@ class Scale:
         return None
 
 
-class Cube:  # объект
+class Cube:  # object
     def __init__(self, win, hor, mass=None, gamma=None):
         self.win = win
         self.pos0 = [550, 300 if hor else 350]  # начальное положение
