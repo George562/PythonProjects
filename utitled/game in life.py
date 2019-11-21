@@ -13,11 +13,11 @@ def filling_red(x=0, y=0, fill=True):
         x, y = pos[0]-pos[0] % c_s, pos[1]-pos[1] % c_s
         if fill and [x, y] not in f_cell:
             f_cell.append([x, y])
-            pygame.draw.rect(screen, red, [x, y, c_s, c_s])
+            pygame.draw.rect(screen, red, [x+1, y+1, c_s-1, c_s-1])
             pygame.display.update()
         elif not fill and [x, y] in f_cell:
             f_cell.remove([x, y])
-            pygame.draw.rect(screen, white, [x, y, c_s, c_s])
+            pygame.draw.rect(screen, white, [x+1, y+1, c_s-1, c_s-1])
             pygame.display.update()
 
 
@@ -47,12 +47,12 @@ def play():
         if cell not in old_f_cell:
             if search == 3:  # add cell
                 f_cell.append(cell)
-                pygame.draw.rect(screen, red, [*cell, c_s, c_s])
+                pygame.draw.rect(screen, red, [cell[0]+1, cell[1]+1, c_s-1, c_s-1])
         else:
             if search < 2 or search > 3:  # death of cell
                 f_cell.remove(cell)
-                pygame.draw.rect(screen, white, [*cell, c_s, c_s])
-    draw_line()
+                pygame.draw.rect(screen, white, [cell[0]+1, cell[1]+1, c_s-1, c_s-1])
+    pygame.display.update()
 
 
 white = (200, 200, 200)
