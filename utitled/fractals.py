@@ -1,56 +1,63 @@
+from math import cos, sin, pi
 import pygame
-
-width = height = 600
-screen = pygame.display.set_mode((600, 600))
-white = (255, 255, 255)
-black = (5, 5, 15)
-alpha = 1
+import random
 
 
-def figure_turn(p_list, deep=10):
-    a = p_list[0]
-    le = len(p_list)
+def rec_fig(seq, point):
+    pass
+
+
+def three(point, ang, deep=10, pha=pi, st_deep=None, l=None):
+    st_deep = st_deep or deep
+    x, y = point
+    leng = l or 150
+    color = green if deep > 0 else red
+    if random.randint(0, 100) >= 10:
+        pygame.draw.line(screen, color, point, (x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), 2)
+        if deep != 0:
+            three((x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), ang, deep-1, pha+(pi/2-ang), st_deep, 3*leng/4)
+    if random.randint(0, 100) >= 10:
+        pygame.draw.line(screen, color, point, (x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), 2)
+        if deep != 0:
+            three((x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), ang, deep-1, pha-(pi/2-ang), st_deep, 3*leng/4)
+
+
+def figure_turn(points, alpha, deep=10):
+    arr = points[0]
+    le = len(points)
     if deep < 1:
         return
     for i in range(le-1):
-        pygame.draw.aaline(screen, white, p_list[i], p_list[i+1])
-    pygame.draw.aaline(screen, white, p_list[le-1], p_list[0])
+        pygame.draw.line(screen, white, points[i], points[i + 1])
+    pygame.draw.line(screen, white, points[le - 1], points[0])
     for i in range(le-1):
-        p_list[i] = [p_list[i][0]*(1-alpha)+p_list[i+1][0]*alpha, p_list[i][1]*(1-alpha)+p_list[i+1][1]*alpha]
-    p_list[le-1] = [p_list[le-1][0]*(1-alpha)+a[0]*alpha, p_list[le-1][1]*(1-alpha)+a[1]*alpha]
-    figure_turn(p_list, deep-1)
+        points[i] = [points[i][0]*(1-alpha)+points[i+1][0]*alpha, points[i][1]*(1-alpha)+points[i+1][1]*alpha]
+    points[le-1] = [points[le-1][0]*(1-alpha)+arr[0]*alpha, points[le-1][1]*(1-alpha)+arr[1]*alpha]
+    figure_turn(points, deep-1)
 
 
-clock = pygame.time.Clock()
+pygame.init()
+screen = pygame.display.set_mode((1200, 950))
+white = (255, 255, 255)
+green = (50, 255, 50)
+red = (255, 50, 50)
+black = (5, 5, 15)
+a = 1
+num = 10
+
 done = False
-pause = False
-s = {'down': -0.01, 'up': 0.01}
-ch = 'down'
 while not done:
-    if not pause:
-        screen.fill(black)
-    # figure_turn([[100, 100], [250, 300], [100, 500], [300, 350], [500, 500], [350, 300], [500, 100], [300, 250]], 100)
-        # figure_turn([[100, 100], [100, 500], [500, 500], [500, 100]], 30)
-        press = pygame.key.get_pressed()
-        alpha += s[ch]
-        if alpha < 0:
-            ch = 'up'
-        elif alpha >= 1:
-            ch = 'down'
-        if press[pygame.K_UP] and alpha <= 1.49:
-            alpha += 0.01
-        if press[pygame.K_DOWN] and alpha >= 0:
-            alpha -= 0.01
+    screen.fill((50, 50, 50))
+    three((600, 575), pi/2-2*pi*(a/15000), num)
+    pygame.display.update()
+    a += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == 32:
-                pause = not pause
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 4 and alpha <= 1.49:  # прокрутка вверх
-                alpha += 0.01
-            if event.button == 5 and alpha >= 0:  # прокрутка вниз
-                alpha -= 0.01
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_k and num != 0:
+                num -= 1
+            elif event.key == pygame.K_l:
+                num += 1
     pygame.display.update()
-    clock.tick(15)
+pygame.quit()
