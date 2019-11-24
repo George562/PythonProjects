@@ -9,16 +9,16 @@ def draw_line():
 
 
 def filling_red(x=0, y=0, fill=True):
-        pos = pygame.mouse.get_pos()
-        x, y = pos[0]-pos[0] % c_s, pos[1]-pos[1] % c_s
-        if fill and [x, y] not in f_cell:
-            f_cell.append([x, y])
-            pygame.draw.rect(screen, red, [x+1, y+1, c_s-1, c_s-1])
-            pygame.display.update()
-        elif not fill and [x, y] in f_cell:
-            f_cell.remove([x, y])
-            pygame.draw.rect(screen, white, [x+1, y+1, c_s-1, c_s-1])
-            pygame.display.update()
+    pos = pygame.mouse.get_pos()
+    x, y = pos[0]-pos[0] % c_s, pos[1]-pos[1] % c_s
+    if fill and [x, y] not in f_cell:
+        f_cell.append([x, y])
+        pygame.draw.rect(screen, red, [x+1, y+1, c_s-1, c_s-1])
+        pygame.display.update()
+    elif not fill and [x, y] in f_cell:
+        f_cell.remove([x, y])
+        pygame.draw.rect(screen, white, [x+1, y+1, c_s-1, c_s-1])
+        pygame.display.update()
 
 
 def searching(c, old_c, m=0):
