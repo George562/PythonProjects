@@ -72,9 +72,9 @@ def prugina(win, obj, k, dT):  # функция считает
         for i in range(31):
             pg.draw.circle(win, white, (30+int(i*(obj.pos[0]-30)/30), 300+int(60*math.sin(i*math.pi/6))), 6)
         if pg.mouse.get_pressed()[0] and not (x >= scale_x-25 and y >= scale_y-25):  # менять положение
+            obj.v[0] = pg.mouse.get_rel()[0]*100
+            obj.a[0] = obj.v[0]
             obj.pos[0] = x
-            obj.a[0] = 0
-            obj.v[0] = 0
         else:
             obj.a[0] = -(obj.gamma*obj.v[0]+k*(obj.pos[0]-obj.pos0[0]))/obj.mass
             obj.v[0] += obj.a[0]*dT
@@ -86,9 +86,9 @@ def prugina(win, obj, k, dT):  # функция считает
         for i in range(25):
             pg.draw.circle(win, white, (550+int(60*math.sin(i*math.pi/6)), 30+int(i*(obj.pos[1]-30)/24)), 6)
         if pg.mouse.get_pressed()[0] and not (x >= scale_x-25 and y >= scale_y-25):  # менять положение
+            obj.v[1] = pg.mouse.get_rel()[1]*100
+            obj.a[1] = obj.v[0]
             obj.pos[1] = y
-            obj.a[1] = 0
-            obj.v[1] = 0
         else:
             obj.a[1] = -(obj.gamma*obj.v[1]+k*(obj.pos[1]-obj.pos0[1]))/obj.mass+g*500
             obj.v[1] += obj.a[1]*dT
