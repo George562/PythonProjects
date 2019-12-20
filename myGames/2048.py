@@ -1,7 +1,7 @@
 import pygame as pg
 from random import randint
 pg.init()
-font = (lambda size, text: pg.font.SysFont('verdana', size).render(str(text), True, (50, 50, 250)))
+font = (lambda size, text: pg.font.SysFont('verdana', size).render(str(text), True, (0, 0, 0)))
 def up(arr):
     for line in range(1, len(arr)):
         for num in range(len(arr[line])):
@@ -63,11 +63,13 @@ scw = sch = 5  # width and height
 sc = pg.display.set_mode((scw * s, sch * s))  # game display
 game_map = [[0] * sch for _ in range(scw)]
 game_map[scw // 2][sch // 2] = 2
-nums = {2 ** i: font(25, 2 ** i) for i in range(1, 21)}
+nums = {2 ** i: font(25, 2 ** i) for i in range(1, scw*sch + 1)}
 nums[0] = font(25, 0)
+colors = {2 ** i: (255, 255-i*10, 0) for i in range(1, scw*sch + 1)}
+colors[0] = (255, 255, 50)
 for x in range(scw):
     for y in range(sch):
-        pg.draw.rect(sc, (250, 250, 50), (x * s + x, y * s + y, s, s))
+        pg.draw.rect(sc, colors[game_map[y][x]], (x * s + x, y * s + y, s, s))
         n = nums[game_map[y][x]]
         sc.blit(n, [x * s + (s - n.get_width()) / 2 + x, y * s + (s - n.get_height()) / 2 + y])
 do = [up, left, down, right]
@@ -87,7 +89,7 @@ while not done:
                     game_map[a][b] = 2
                     for x in range(scw):
                         for y in range(sch):
-                            pg.draw.rect(sc, (250, 250, 50), (x * s + x, y * s + y, s, s))
+                            pg.draw.rect(sc, colors[game_map[y][x]], (x * s + x, y * s + y, s, s))
                             n = nums[game_map[y][x]]
                             sc.blit(n, [x * s + (s - n.get_width()) / 2 + x, y * s + (s - n.get_height()) / 2 + y])
     pg.display.flip()
