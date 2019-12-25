@@ -10,5 +10,5 @@ for i in range(k):
     else:
         ans[b] = [''.join(a)]
 print(len(ans))
-for i, j in ans:
-    print(*j)
+for i in ans:
+    print(*ans[i])
