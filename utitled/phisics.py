@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+from time import time
 
 G = 1.66 * 10e-11
 Time = 0.1 ** 6
@@ -10,6 +11,7 @@ SGO = 2
 
 class CircleObject:
     type = CO
+    t = time()
 
     def __init__(self, space, mass, x, y, radius=8, vx=0, vy=0, ax=0, ay=0):
         self.space = space
@@ -30,7 +32,7 @@ class CircleObject:
             if obj != self:
                 dx, dy = obj.x - self.x, obj.y - self.y
                 hyp = math.hypot(dx, dy)
-                if hyp >= 8:
+                if hyp >= 5:
                     if dx != 0:
                         cos = dx/hyp
                         all_ax += cos * G * obj.mass / ((hyp * 10e-9) ** 2)
@@ -45,13 +47,13 @@ class CircleObject:
         self.ay = all_ay
         self.vy += self.ay * Time
         self.y += self.vy * Time
-        self.line.append((self.x, self.y))
-        if len(self.line) > 1500:
-            self.line.pop(0)
+        if time()-self.t > 0.1:
+            self.line.append((self.x, self.y))
+            self.t = time()
 
     def show(self, win):
-        for i in range(len(self.line)-1):
-            pg.draw.line(win, (0, 255, 100), self.line[i], self.line[i+1])
+        for i in range(-1, (-len(self.line) if len(self.line) <= 300 else -301), -1):
+            pg.draw.line(win, (0, 255, 100), self.line[i-1], self.line[i])
         pg.draw.circle(win, (255, 255, 255), (round(self.x), round(self.y)), self.radius)
 
 
@@ -70,10 +72,10 @@ class StaticGravityObject:
 
 
 place = []
-place.append(CircleObject(place, 10e5, 400, 300))
-place.append(CircleObject(place, 10e5, 300, 400))
-place.append(CircleObject(place, 10e5, 300, 500))
-place.append(StaticGravityObject(place, 10e5, 400, 400))
+place.append(CircleObject(place, 10e4, 400, 300))
+place.append(CircleObject(place, 10e4, 300, 500))
+place.append(CircleObject(place, 10e4, 300, 300))
+place.append(StaticGravityObject(place, 10e4, 400, 400))
 scw, sch = 800, 800
 sc = pg.display.set_mode((scw, sch))
 done = False
