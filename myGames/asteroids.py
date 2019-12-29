@@ -2,7 +2,9 @@ import pygame as pg
 import math as m
 from random import randint
 from time import time
-import sys
+
+pg.init()
+font = (lambda text: pg.font.SysFont('verdana', 25).render(str(text), True, (255, 255, 255)))
 
 
 class Asteroid:
@@ -11,8 +13,8 @@ class Asteroid:
         self.space = space
         self.x = randint(0, scw)
         self.y = randint(0, sch)
-        self.rad = randint(5, 25)
-        self.color = (randint(150, 255), randint(150, 255), randint(150, 255))
+        self.rad = randint(15, 30)
+        self.color = (randint(100, 255), randint(100, 255), randint(100, 255))
         self.hp = self.rad // 5
         self.angle = m.radians(randint(0, 359))
 
@@ -29,20 +31,22 @@ class Asteroid:
             self.y = sch
         pg.draw.circle(self.win, self.color, (int(self.x), int(self.y)), self.rad)
 
-    def update(self, arr):
+    def update(self, arr, sh):
         for bul in arr:
             if m.hypot(bul['x'] - self.x, bul['y'] - self.y) < self.rad:
                 self.hp -= 1
                 arr.pop(arr.index(bul))
                 if self.hp == 0:
                     self.space.remove(self)
+                    sh.score += self.rad // 5
 
 
 class Spaceship:
+    score = 0
     angle = 0
     rad = 12
     rel = time()
-    a = 0.05
+    a = 0.02
     v = 0
     bulls = []
 
@@ -59,6 +63,7 @@ class Spaceship:
              self.y + m.sin(self.angle - m.pi * 37 / 30) * self.rad],
             [self.x + m.cos(self.angle) * self.rad, self.y + m.sin(self.angle) * self.rad]
         ])
+        self.win.blit(font(self.score), [5, 5])
 
     def move(self):
         k = pg.key.get_pressed()
@@ -68,7 +73,7 @@ class Spaceship:
             if time() - self.rel > 0.5:
                 self.rel = time()
                 self.bulls.append({'x': self.x, 'y': self.y, 'ang': self.angle})
-            if self.v < 4:
+            if self.v < 3:
                 self.v += self.a
         elif self.v > 0:
             self.v -= self.a
@@ -106,15 +111,18 @@ spaceship = Spaceship(sc, scw // 2, sch // 2)
 clock = pg.time.Clock()
 done = False
 while not done:
-    if time() - t > 3:
+    if time() - t > 2:
         asteroids.append(Asteroid(sc, asteroids))
         t = time()
     sc.blit(bg, (0, 0))
     for ast in asteroids:
         ast.draw()
-        ast.update(spaceship.bulls)
+        ast.update(spaceship.bulls, spaceship)
         if m.hypot(ast.x - spaceship.x, ast.y - spaceship.y) < ast.rad + spaceship.rad:
-            sys.exit()
+            spaceship.bulls.clear()
+            asteroids.clear()
+            spaceship.x, spaceship.y = scw // 2, sch // 2
+            spaceship.score = 0
     spaceship.move()
     spaceship.draw()
     for event in pg.event.get():
