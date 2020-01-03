@@ -1,13 +1,6 @@
 import pygame
 
 
-def draw_line():
-    for k in range(1, n+1):
-        pygame.draw.line(screen, black, [0, k*c_s], [width, k*c_s], 1)
-        pygame.draw.line(screen, black, [k*c_s, 0], [k*c_s, height], 1)
-        pygame.display.update()
-
-
 def filling_red(x=0, y=0, fill=True):
     pos = pygame.mouse.get_pos()
     x, y = pos[0]-pos[0] % c_s, pos[1]-pos[1] % c_s
@@ -71,7 +64,10 @@ pygame.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('игра в жизнь')
 screen.fill(white)
-draw_line()
+for k in range(1, n+1):
+    pygame.draw.line(screen, black, [0, k*c_s], [width, k*c_s], 1)
+    pygame.draw.line(screen, black, [k*c_s, 0], [k*c_s, height], 1)
+    pygame.display.update()
 done = playing = False
 while not done:
     if pygame.mouse.get_pressed()[0]:
@@ -87,8 +83,5 @@ while not done:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 playing = not playing
-        if event.type == pygame.MOUSEBUTTONUP:
-            if event.button in [1, 3]:
-                draw_line()
     old_f_cell = f_cell.copy()
 pygame.quit()
