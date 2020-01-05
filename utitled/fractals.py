@@ -3,8 +3,35 @@ import pygame
 import random
 
 
-def rec_fig(seq, point):
-    pass
+def zoom(do):
+    x, y = pg.mouse.get_pos()
+    if do:
+        for i in range(len(arr)):
+            arr[i] = (arr[i][0]-x)*1.05+x, (arr[i][1]-y)*1.05+y
+    else:
+        for i in range(len(arr)):
+            arr[i] = (arr[i][0]-x)/1.05+x, (arr[i][1]-y)/1.05+y
+
+
+def fractal(depth):
+    print(depth, time()-t)
+    if depth > 0:
+        h = hypot(arr[0][0]-arr[1][0], arr[0][1]-arr[1][1])
+        for i in arr.copy()[:len(arr)-1]:
+            x, y, x1, y1 = *i, *arr[arr.index(i)+1]
+            i = arr.index(i)
+            rx, ry = (x1-x), (y1-y)
+            angle = -atan2(rx, ry)
+            arr.insert(i+1, (x+rx/3, y+ry/3))
+            arr.insert(i+2, ((x+x1)/2+cos(angle)*h/3, (y1+y)/2+sin(angle)*h/3))
+            arr.insert(i+3, (x+rx*2/3, y+ry*2/3))
+        x, y, x1, y1 = *arr[-1], *arr[0]
+        rx, ry = (x1-x), (y1-y)
+        angle = -atan2(rx, ry)
+        arr.append((x+rx/3, y+ry/3))
+        arr.append(((x+x1)/2+cos(angle)*h/3, (y+y1)/2+sin(angle)*h/3))
+        arr.append((x+rx*2/3, y+ry*2/3))
+        fractal(depth-1)
 
 
 def three(point, ang, deep=10, pha=pi, st_deep=None, l=None):
