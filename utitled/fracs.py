@@ -3,8 +3,6 @@ from math import hypot, cos, sin, atan2
 import os
 from time import time
 
-
-
 def zoom(do):
     x, y = pg.mouse.get_pos()
     if do:
@@ -13,7 +11,6 @@ def zoom(do):
     else:
         for i in range(len(arr)):
             arr[i] = (arr[i][0]-x)/1.05+x, (arr[i][1]-y)/1.05+y
-
 
 def fractal(depth, sd=0):
     print(depth, time()-t)
@@ -28,19 +25,21 @@ def fractal(depth, sd=0):
             arr.insert(i+2, ((x+x1)/2+cos(angle)*h/3, (y1+y)/2+sin(angle)*h/3))
             if sd != 0:
                 arr.insert(i+3, (x+rx*2/3, y+ry*2/3))
+            else:
+                arr.pop()
         fractal(depth-1, depth)
 
-
-topTime = t = time()
+topTime = time()
+t = time()
 scw, sch = 750, 750
 sc = pg.display.set_mode((scw, sch))
 z = 1
-d = 9
+d = 10
 arr = [(scw/3, sch/3), (scw*2/3, sch/3)]
 fractal(d)
 print(len(arr))
 print(time()-topTime)
-a = len(arr)//(3**(d))
+a = len(arr)//(3**(d))*4
 clock = pg.time.Clock()
 done = False
 while not done:
