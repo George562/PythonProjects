@@ -41,35 +41,23 @@ print(len(arr))
 print(time()-topTime)
 clock = pg.time.Clock()
 done = False
-firstEl = 0
-lastEl = len(arr)
 while not done:
     sc.fill((0, 0, 0))
-    first = False
-    last = False
-    for i in range(firstEl, lastEl-1):
-        if any([0 <= arr[i][0] <= scw, 0 <= arr[i][1] <= sch, 0 <= arr[i+1][0] <= scw, 0 <= arr[i+1][1] <= sch]):
-            if not first:
-                first = True
-                firstEl = i
+    for i in range(len(arr)-1):
+        if 0 <= arr[i][0] <= scw and 0 <= arr[i][1] <= sch or 0 <= arr[i+1][0] <= scw and 0 <= arr[i+1][1] <= sch:
             pg.draw.line(sc, (255, 255, 255), arr[i], arr[i+1])
             if all([0 <= arr[i][0] <= scw, 0 <= arr[i][1] <= sch, 0 <= arr[i+1][0] <= scw, 0 <= arr[i+1][1] <= sch]):
-                if hypot(arr[i][0]-arr[i+1][0], arr[i][1]-arr[i+1][1]) > 15:
+                dh = hypot(arr[i][0]-arr[i+1][0], arr[i][1]-arr[i+1][1])
+                if dh > 20:
                     dop = lom(*arr[i], *arr[i+1])
                     for j in range(3):
                         arr.insert(i+j+1, dop[j])
-        elif first:
-            last = True
-            lastEl = i+1
-    else:
-        if not last:
-            lastEl = len(arr)
     if pg.mouse.get_pressed()[0]:
         zoom(True)
+        z *= 1.05
     if pg.mouse.get_pressed()[2]:
         zoom(False)
-        firstEl = firstEl if firstEl > 4 else firstEl-4
-        lastEl = lastEl if lastEl < len(arr)-15 else lastEl+8
+        z /= 1.05
     for e in pg.event.get():
         if e.type == pg.QUIT:
             done = True
