@@ -1,8 +1,7 @@
-from math import pi, sin, cos, pi, hypot
+from math import sin, cos, pi, hypot, copysign
 from random import randint
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
 from panda3d.core import Point3, TransparencyAttrib, DirectionalLight, PointLight, VBase4, AmbientLight, TextNode, NodePath, Quat
 from panda3d.physics import ActorNode, ForceNode, LinearVectorForce
@@ -10,28 +9,33 @@ from direct.showbase import DirectObject
 from panda3d.ode import OdeWorld, OdeBody, OdeMass, OdeBallJoint
 
 def getAcceleration(arr, now):
+    gamma = 5
     a = [0, 0, 0]
     pos = arr[now].getPosition()
     for i in range(len(arr)):
         if i != now:
             pos1 = arr[i].getPosition()
-            h = hypot(pos[0]-pos1[0], pos[1]-pos1[1])        
+            h = hypot(hypot(pos[0]-pos1[0], pos[1]-pos1[1]), pos[2]-pos1[2])
             a[0] += (pos[0]-pos1[0])/h
             a[1] += (pos[1]-pos1[1])/h
+            a[2] += (pos[2]-pos1[2])/h
+    a[0] -= arr[now].get_linear_vel()[0]*gamma
+    a[1] -= arr[now].get_linear_vel()[1]*gamma
+    a[2] -= arr[now].get_linear_vel()[2]*gamma
     return a 
 
-def zapolnenie(world, n):
+def zapolnenie(world, n, mi, ma):
     for i in range(n):
         sphere = loader.loadModel("smiley.egg")
         sphere.reparentTo(render)
-        r = randint(10, 25)
-        sphere.setPos(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, 2)
+        r = randint(mi, ma)
+        sphere.setPos(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, r//1.5)
 
         sphereBody = OdeBody(world.myWorld)
         sphereModel = OdeMass()
         sphereModel.setSphere(1, 2)
         sphereBody.setMass(sphereModel)
-        sphereBody.setPosition(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, 2)
+        sphereBody.setPosition(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, r//1.5)
         world.spheres.append(sphereBody)
         world.objs.append(sphere)
 
@@ -46,10 +50,6 @@ def zapolnenie(world, n):
     world.joints.append(sphereJoint)
 
 class KatushkaLovushkeraUWUControl(DirectObject.DirectObject):
-    k = 500
-    l = 10
-    a = 1
-
     def __init__(self, world):
         self.world = world
         self.world.objs = []
@@ -58,7 +58,7 @@ class KatushkaLovushkeraUWUControl(DirectObject.DirectObject):
 
         self.world.myWorld = OdeWorld()
 
-        zapolnenie(self.world, 10)
+        zapolnenie(self.world, 15, 10, 15)
 
         self.world.deltaTimeAccumulator = 0.0
         self.world.stepSize = 1.0 / 90.0
