@@ -1,27 +1,89 @@
-from math import pi, sin, cos
-
+from math import sin, cos, pi, hypot, copysign
+from random import randint
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
-from panda3d.core import Point3, TransparencyAttrib, DirectionalLight, PointLight, VBase4, AmbientLight, TextNode
+from panda3d.core import Point3, TransparencyAttrib, DirectionalLight, PointLight, VBase4, AmbientLight, TextNode, NodePath, Quat
+from panda3d.physics import ActorNode, ForceNode, LinearVectorForce
 from direct.showbase import DirectObject
+from panda3d.ode import OdeWorld, OdeBody, OdeMass, OdeBallJoint
 
-class BoxControl(DirectObject.DirectObject):
-    def __init__(self, a_world):
-        self.worl = a_world
+def getAcceleration(arr, now):
+    gamma = 5
+    a = [0, 0, 0]
+    pos = arr[now].getPosition()
+    for i in range(len(arr)):
+        if i != now:
+            pos1 = arr[i].getPosition()
+            h = hypot(hypot(pos[0]-pos1[0], pos[1]-pos1[1]), pos[2]-pos1[2])
+            a[0] += (pos[0]-pos1[0])/h
+            a[1] += (pos[1]-pos1[1])/h
+            a[2] += (pos[2]-pos1[2])/h
+    a[0] -= arr[now].get_linear_vel()[0]*gamma
+    a[1] -= arr[now].get_linear_vel()[1]*gamma
+    a[2] -= arr[now].get_linear_vel()[2]*gamma
+    return a 
 
-        self.accept('space-up', self.turnoff)
-        self.accept('space', self.turnon)
+def zapolnenie(world, n, mi, ma):
+    for i in range(n):
+        sphere = loader.loadModel("smiley.egg")
+        sphere.reparentTo(render)
+        r = randint(mi, ma)
+        sphere.setPos(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, r//1.5)
 
-    def turnon(self):
-        self.world.taskMgr.add(self.boxturnon, 'BoxTurnOn')
+        sphereBody = OdeBody(world.myWorld)
+        sphereModel = OdeMass()
+        sphereModel.setSphere(1, 2)
+        sphereBody.setMass(sphereModel)
+        sphereBody.setPosition(sin(i*2*pi/n)*r, cos(i*2*pi/n)*r, r//1.5)
+        world.spheres.append(sphereBody)
+        world.objs.append(sphere)
 
-    def turnoff(self):
-        self.world.taskMgr.add(self.boxturnoff, 'BoxTurnOff')
+    for i in range(n-1):
+        sphereJoint = OdeBallJoint(world.myWorld)
+        sphereJoint.attach(world.spheres[i], world.spheres[i+1])
+        sphereJoint.setAnchor(world.spheres[i].getPosition())
+        world.joints.append(sphereJoint)
+    sphereJoint = OdeBallJoint(world.myWorld)
+    sphereJoint.attach(world.spheres[-1], world.spheres[0])
+    sphereJoint.setAnchor(world.spheres[-1].getPosition())
+    world.joints.append(sphereJoint)
 
-    def boxturnon(self, task):
-        self.world.boxmodel.setH(self.worl.)
+class KatushkaLovushkeraUWUControl(DirectObject.DirectObject):
+    def __init__(self, world):
+        self.world = world
+        self.world.objs = []
+        self.world.spheres = []
+        self.world.joints = []
+
+        self.world.myWorld = OdeWorld()
+
+        zapolnenie(self.world, 15, 10, 15)
+
+        self.world.deltaTimeAccumulator = 0.0
+        self.world.stepSize = 1.0 / 90.0
+
+        self.accept('g-up', self.up)
+        self.accept('g', self.press)
+
+        self.g_pressed = False
+        self.world.taskMgr.doMethodLater(1.0, self.simulationTask, 'Physics Simulation')
+
+    def simulationTask(self, task):
+        self.world.deltaTimeAccumulator += globalClock.getDt()
+        while self.world.deltaTimeAccumulator > self.world.stepSize:
+            self.world.deltaTimeAccumulator -= self.world.stepSize
+            self.world.myWorld.quickStep(self.world.stepSize)
+        for i in range(len(self.world.spheres)):
+            self.world.spheres[i].setForce(*getAcceleration(self.world.spheres, i))
+            self.world.objs[i].setPosQuat(render, self.world.spheres[i].getPosition(), Quat(self.world.spheres[i].getQuaternion()))
+        return task.cont
+
+    def press(self):
+        self.g_pressed = True
+
+    def up(self):
+        self.g_pressed = False
 
 class CameraControls(DirectObject.DirectObject):
     delta_x = 0
@@ -211,7 +273,6 @@ class CameraControls(DirectObject.DirectObject):
         self.delta_z += self.velocity
         return Task.cont
 
-        
 class MyApp(ShowBase):
 
     def __init__(self):
@@ -227,32 +288,7 @@ class MyApp(ShowBase):
         self.scene.setScale(0.25, 0.25, 0.25)
         self.scene.setPos(-8, 42, -5)
 
-        ### vv Load and transform the panda actor.
-        self.pandaActor = Actor("models/panda-model",
-                                {"walk" : "models/panda-walk4"})
-        self.pandaActor.setScale(0.005, 0.005, 0.005)
-        self.pandaActor.reparentTo(self.render)
-        ### vv Loop its animation.
-        self.pandaActor.loop("walk")
-        self.pandaActor.setTransparency(TransparencyAttrib.MAlpha)
-        self.pandaActor.setColor(1, 0, 0, 0.5)
-
-        ### Load and transform the box actor.
-        self.boxModel = self.loader.loadModel("models/box")
-        self.boxModel.reparentTo(self.render)
-        self.boxModel.setPos(0, 0, 0)
-
-        ### Load and transform the sphere actor.
-        # self.sphereModel = self.loader.loadModel("models/misc/sphere")
-        # self.sphereModel.reparentTo(self.render)
-        # self.sphereModel.setPos(0, 0, 0)
-
-        # self.plight = PointLight('plight')
-        # self.plight.setColor(VBase4(1, 1, 1, 1))
-        # self.plnp = self.render.attachNewNode(self.plight)
-        # self.plnp.setPos(0, 0, 0)
-        # self.render.setLight(self.plnp)
-        # self.plight.setAttenuation((1, 0, 0.1))
+        self.katushka = KatushkaLovushkeraUWUControl(self)
 
         self.alight = AmbientLight('alight')
         self.alight.setColor(VBase4(0.2, 0.2, 0.2, 1))
@@ -264,31 +300,7 @@ class MyApp(ShowBase):
         
         self.a_text = TextNode('my node')
         self.a_text.setText("Every day I'm honestly trying to get better in some way.")
-        self.a_text_node_path = self.render.attachNewNode(self.a_text)
-        
-        # Create the four lerp intervals needed for the panda to
-        # walk back and forth
-        pandaPosInterval1 = self.pandaActor.posInterval(13,
-                                                        Point3(0, -10, 0),
-                                                        startPos=Point3(0, 10, 0))
-        pandaPosInterval2 = self.pandaActor.posInterval(13,
-                                                        Point3(0, 10, 0),
-                                                        startPos=Point3(0, -10, 0))
-        pandaHprInterval1 = self.pandaActor.hprInterval(3,
-                                                        Point3(180, 0, 0),
-                                                        startHpr=Point3(0, 0, 0))
-        pandaHprInterval2 = self.pandaActor.hprInterval(3,
-                                                        Point3(0, 0, 0),
-                                                        startHpr=Point3(180, 0, 0))
-
-        # Create and play the sequence that coordinates the intervals.
-        self.pandaPace = Sequence(pandaPosInterval1,
-                                  pandaHprInterval1,
-                                  pandaPosInterval2,
-                                  pandaHprInterval2,
-                                  name="pandaPace")
-        self.pandaPace.loop()
-        
+        self.a_text_node_path = self.render.attachNewNode(self.a_text)        
 
     ### vv Define a procedure to move the camera.
     def spinCameraTask(self, task):
@@ -298,7 +310,5 @@ class MyApp(ShowBase):
         self.camera.setHpr(angleDegrees, 0, 0)
         return Task.cont
 
-
-    
 app = MyApp()
 app.run()
