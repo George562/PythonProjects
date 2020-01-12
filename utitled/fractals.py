@@ -1,6 +1,5 @@
 from math import cos, sin, pi
-import pygame
-import random
+import pygam
 
 
 def zoom(do):
@@ -39,14 +38,11 @@ def three(point, ang, deep=10, pha=pi, st_deep=None, l=None):
     x, y = point
     leng = l or 150
     color = green if deep > 0 else red
-    if random.randint(0, 100) >= 10:
-        pygame.draw.line(screen, color, point, (x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), 2)
-        if deep != 0:
-            three((x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), ang, deep-1, pha+(pi/2-ang), st_deep, 3*leng/4)
-    if random.randint(0, 100) >= 10:
-        pygame.draw.line(screen, color, point, (x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), 2)
-        if deep != 0:
-            three((x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), ang, deep-1, pha-(pi/2-ang), st_deep, 3*leng/4)
+    pygame.draw.line(screen, color, point, (x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), 2)
+    pygame.draw.line(screen, color, point, (x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), 2)
+    if deep != 0:
+        three((x-cos(pha-ang)*leng, y-sin(pha-ang)*leng), ang, deep-1, pha+(pi/2-ang), st_deep, 3*leng/4)
+        three((x+cos(pha+ang)*leng, y+sin(pha+ang)*leng), ang, deep-1, pha-(pi/2-ang), st_deep, 3*leng/4)
 
 
 def figure_turn(points, alpha, deep=10):
