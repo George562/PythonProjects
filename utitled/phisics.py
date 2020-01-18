@@ -10,10 +10,11 @@ SGO = 2
 
 
 class CircleObject:
+    letdraw = True
     type = CO
     t = time()
 
-    def __init__(self, space, mass, x, y, radius=8, vx=0, vy=0, ax=0, ay=0):
+    def __init__(self, space, mass, x, y, radius=8, vx=0., vy=0., ax=0., ay=0.):
         self.space = space
         self.mass = mass
         self.radius = radius
@@ -52,8 +53,9 @@ class CircleObject:
             self.t = time()
 
     def show(self, win):
-        for i in range(-1, (-len(self.line) if len(self.line) <= 300 else -301), -1):
-            pg.draw.line(win, (0, 255, 100), self.line[i-1], self.line[i])
+        if self.letdraw:
+            for i in range(-1, (-len(self.line) if len(self.line) <= 300 else -301), -1):
+                pg.draw.line(win, (0, 255, 100), self.line[i-1], self.line[i])
         pg.draw.circle(win, (255, 255, 255), (round(self.x), round(self.y)), self.radius)
 
 
@@ -72,10 +74,12 @@ class StaticGravityObject:
 
 
 place = []
-place.append(CircleObject(place, 10e4, 400, 300))
-place.append(CircleObject(place, 10e4, 300, 500))
-place.append(CircleObject(place, 10e4, 300, 300))
-place.append(StaticGravityObject(place, 10e4, 400, 400))
+n = 24
+v = 2*10e4
+CircleObject.letdraw = False
+for i in range(n):
+    place.append(CircleObject(place, 10e2, 300, 300, 8, v*math.cos(2*math.pi*i/n), v*math.sin(2*math.pi*i/n)))
+place.append(StaticGravityObject(place, 5*10e5, 450, 400))
 scw, sch = 800, 800
 sc = pg.display.set_mode((scw, sch))
 done = False
