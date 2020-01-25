@@ -59,8 +59,8 @@ def physic():
     obj.ax = obj.ay = 0
     ea = E*obj.q/obj.mass
     if obj.x > L + start[0]:
-        obj.ax -= ea*m.cos(m.radians(Eangle))
-        obj.ay -= ea*m.sin(m.radians(Eangle))
+        obj.ax -= ea*m.cos(m.radians(-Eangle))
+        obj.ay -= ea*m.sin(m.radians(-Eangle))
     obj.vx += obj.ax * DT
     obj.x += obj.vx * DT
     obj.ay += gravity
@@ -121,9 +121,9 @@ while not done:
     pg.draw.polygon(sc, white, workplace, 1)
     pg.draw.line(sc, yellow, (L+start[0]+mapX, 50), (L+start[0]+mapX, 600))
 
-    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle+45))*20, 300-m.sin(m.radians(Eangle+45))*20), 2)
-    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle))*50, 300-m.sin(m.radians(Eangle))*50), 2)
-    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle-45))*20, 300-m.sin(m.radians(Eangle-45))*20), 2)
+    pg.draw.aaline(sc, yellow, (700, 300), (700-m.cos(m.radians(-Eangle+45))*20, 300-m.sin(m.radians(-Eangle+45))*20), 2)
+    pg.draw.aaline(sc, yellow, (700, 300), (700-m.cos(m.radians(-Eangle))*50, 300-m.sin(m.radians(-Eangle))*50), 2)
+    pg.draw.aaline(sc, yellow, (700, 300), (700-m.cos(m.radians(-Eangle-45))*20, 300-m.sin(m.radians(-Eangle-45))*20), 2)
 
     vSlider.update(*mPos)
     angleSlider.update(*mPos)
@@ -161,6 +161,7 @@ while not done:
                     obj.x, obj.y = start
                     obj.vx = obj.vy = obj.ax = obj.ay = 0
                     simulate = False
+                    mapX = mapY = 0
                 else:
                     simulate = True
                     Tstart = time()
