@@ -5,16 +5,13 @@ except ModuleNotFoundError:
     os.system('pip install pygame')
     import pygame as pg
 import math as m
+from time import time
 
 pg.init()
 
-black  = (  0,   0,   0)
-blue   = (  0,   0, 255)
-green  = (  0, 255,   0)
-red    = (255,   0,   0)
-purple = (255,   0, 255)
-yellow = (255, 255,   0)
-white  = (255, 255, 255)
+black = (0, 0, 0)
+yellow = (255, 255, 0)
+white = (255, 255, 255)
 
 font = (lambda size, text: pg.font.SysFont('verdana', size).render(str(text), False, white))
 
@@ -54,14 +51,19 @@ class Slider:
             if pg.mouse.get_pressed()[0]:
                 actTyp = self
                 typing = True
+                self.value = 0
 
 
 def physic():
     global simulate
-    obj.ax = - E*obj.q/obj.mass if obj.x > L + start[0] else 0
+    obj.ax = obj.ay = 0
+    ea = E*obj.q/obj.mass
+    if obj.x > L + start[0]:
+        obj.ax -= ea*m.cos(m.radians(Eangle))
+        obj.ay -= ea*m.sin(m.radians(Eangle))
     obj.vx += obj.ax * DT
     obj.x += obj.vx * DT
-    obj.ay = gravity
+    obj.ay += gravity
     obj.vy += obj.ay * DT
     obj.y += obj.vy * DT
     if obj.y > start[1]:
@@ -76,43 +78,66 @@ actTyp = None
 
 gravity = 9.81
 E = 100
+Eangle = 180
 
-v = 1
+v = 100
 angle = 45
 start = (50, 600)
 obj = Obj(*start)
 obj.q = 1
 obj.mass = 1
-L = 100
+L = 500
+Tstart, Tend = 0, 0
 zoom = 1
 DT = 2 * 10e-3
 workplace = [(50, 600), (50, 50), (850, 50), (850, 600)]
 
 # sliders
-vSlider = Slider(sc, 80, 50, 620, 1, 'v')
+vSlider = Slider(sc, 80, 50, 620, 100, 'v')
 angleSlider = Slider(sc, 40, 220, 620, 45, 'angle')
-lSlider = Slider(sc, 80, 310, 620, 100, 'L')
+lSlider = Slider(sc, 80, 310, 620, 500, 'L')
 ESlider = Slider(sc, 80, 430, 620, 100, 'E')
+qSlider = Slider(sc, 80, 560, 620, 1, 'q')
+EangleSlider = Slider(sc, 80, 740, 620, 180, 'E angle')
+
+mapX, mapY = 0, 0
 
 simulate = False
 done = False
 while not done:
     sc.fill(black)
+    mPos = pg.mouse.get_pos()
+    sc.blit(font(18, f'x = {round(obj.x-start[0], 5)}'), [860, 50])
+    sc.blit(font(18, f'y = {round(start[1]-obj.y, 5)}'), [860, 75])
+    sc.blit(font(18, f'vx = {round(obj.vx, 5)}'), [860, 100])
+    sc.blit(font(18, f'vy = {round(-obj.vy, 5)}'), [860, 125])
+    sc.blit(font(18, f'ax = {round(obj.ax, 5)}'), [860, 150])
+    sc.blit(font(18, f'ay = {round(obj.ay, 5)}'), [860, 175])
+    sc.blit(font(18, f'timer = {round(Tend-Tstart, 3)}'), [860, 200])
     if simulate:
         physic()
-    pg.draw.circle(sc, white, (round(obj.x), round(obj.y)), 10)
+        Tend = time()
+    pg.draw.circle(sc, white, (round(obj.x)+mapX, round(obj.y)+mapY), 10)
     pg.draw.polygon(sc, white, workplace, 1)
-    pg.draw.line(sc, yellow, (L, 50), (L, 600))
+    pg.draw.line(sc, yellow, (L+start[0]+mapX, 50), (L+start[0]+mapX, 600))
 
-    vSlider.update(*pg.mouse.get_pos())
-    angleSlider.update(*pg.mouse.get_pos())
-    lSlider.update(*pg.mouse.get_pos())
-    ESlider.update(*pg.mouse.get_pos())
+    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle+45))*20, 300-m.sin(m.radians(Eangle+45))*20), 2)
+    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle))*50, 300-m.sin(m.radians(Eangle))*50), 2)
+    pg.draw.line(sc, yellow, (600, 300), (600-m.cos(m.radians(Eangle-45))*20, 300-m.sin(m.radians(Eangle-45))*20), 2)
+
+    vSlider.update(*mPos)
+    angleSlider.update(*mPos)
+    lSlider.update(*mPos)
+    ESlider.update(*mPos)
+    qSlider.update(*mPos)
+    EangleSlider.update(*mPos)
 
     vSlider.draw()
     ESlider.draw()
     angleSlider.draw()
     lSlider.draw()
+    qSlider.draw()
+    EangleSlider.draw()
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -129,14 +154,24 @@ while not done:
                 v = vSlider.value
                 L = lSlider.value
                 E = ESlider.value
+                obj.q = qSlider.value
+                Eangle = EangleSlider.value
             if event.key == pg.K_SPACE:
                 if (obj.x, obj.y) != start:
                     obj.x, obj.y = start
-                    print(1)
+                    obj.vx = obj.vy = obj.ax = obj.ay = 0
+                    simulate = False
                 else:
-                    simulate = not simulate
+                    simulate = True
+                    Tstart = time()
                     obj.vx = m.cos(m.radians(angle)) * v
                     obj.vy = - m.sin(m.radians(angle)) * v
+                    timer = time()
+            if event.key in range(pg.K_UP, pg.K_LEFT+1):
+                if event.key in (273, 274):  # 273 Up / 274 Down
+                    mapY += 50 * (1 - 2 * (274 - event.key))
+                if event.key in (275, 276):  # 275 RIGHT / 276 LEFT
+                    mapX += 50 * (- 1 + 2 * (276 - event.key))
     pg.display.update()
 
 pg.quit()
