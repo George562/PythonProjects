@@ -165,6 +165,10 @@ while not done:
                     Slider.actTyp.value = int(str(Slider.actTyp.value)[:-1] or 0)
             if event.key == pg.K_RETURN:
                 Slider.actTyp = None
+            if event.key == pg.K_TAB:
+                mapX = mapY = 0
+            if event.key == pg.K_p and obj.x != 0 and obj.y != 0:
+                simulate = not simulate
             if event.key == pg.K_SPACE:
                 if (obj.x, obj.y) != (0, 0):
                     obj.x = obj.y = obj.vx = obj.vy = obj.ax = obj.ay = mapX = mapY = 0
