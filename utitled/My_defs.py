@@ -59,14 +59,6 @@ class Slider:
             self.value = int(self.value)
         return self.value
 
-    def custom(self, rad=None, w=None, h=None, bg=None, l_c=None, c_c=None):
-        self.rad = rad if rad is not None else self.rad
-        self.w = w if w is not None else self.w
-        self.h = h if h is not None else self.h
-        self.bg = bg if bg is not None else self.bg
-        self.l_c = l_c if l_c is not None else self.l_c
-        self.c_c = c_c if c_c is not None else self.c_c
-
 
 class Button:
     bc = (155, 0, 0)  # back color
