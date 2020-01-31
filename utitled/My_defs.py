@@ -110,3 +110,31 @@ class Button:
         else:
             self.n_bc = self.bc
         self.draw()
+
+
+class Entry:
+    actTyp = None  # which is active now
+    h = 30  # height
+
+    def __init__(self, win, w, x, y, value, name=''):
+        self.win = win  # place for draw
+        self.name = font_return(18, name) if name != '' else None
+        self.x = x  # x coordinate
+        self.y = y  # y coordinate
+        self.w = w  # width
+        self.value = value  # present value
+        self.name_x = self.x - self.name.get_width() - 10 if name != '' else self.x
+        self.default = (win, w, x, y, value, name)  # default parameters
+
+    def draw(self):
+        if self.name is not None:
+            self.win.blit(self.name, [self.name_x, self.y])
+        val = font_return(18, self.value)  # font of self.value
+        self.win.blit(val, [self.x + (self.w - val.get_width()) / 2, self.y + (self.h - val.get_height()) / 2])
+        pg.draw.rect(self.win, white, (self.x, self.y, self.w, self.h), 2)  # bg
+
+    def update(self, x, y):  # x and y is some coordinates
+        if 0 <= x - self.x <= self.w and 0 <= y - self.y <= self.h:
+            if pg.mouse.get_pressed()[0]:
+                Entry.actTyp = self
+                self.value = 0
