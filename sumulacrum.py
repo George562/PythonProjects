@@ -1,6 +1,5 @@
 import pygame as pg
 from random import randint
-from time import time
 
 pg.init()
 
@@ -15,33 +14,38 @@ green = (
 )
 
 
-font = (lambda text: pg.font.SysFont("Georgia", 20).render(str(text), True, white))
+font = (lambda text, size=25: pg.font.SysFont("Roboto", size).render(str(text), True, white))
+isfull = (lambda a: sum(a) // len(a))
 
 
-def moveIn(dude, was):
-    pass
+def graphic(a):
+    pg.draw.line(sc, white, (N * size + 15, N * size - 115), (N * size + 15, N * size - 15))
+    # pg.draw.line(sc, white, (N * size + 15, N * size - 15), (N * size + 115, N * size - 15))
+    data = {i: a.count(i) for i in set(a)}
+    for j, i in enumerate(sorted(data.keys())):
+        pg.draw.rect(sc, white, (N * size + 15 + 17 * j + 5, N * size - 20, 8, -data[i] * 5))
+        sc.blit(font(i, 20), [N * size + 15 + 17 * j + 5, N * size - 15])
 
 
 class Dude:
     angles = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
     angle = angles[randint(0, 7)]
-    eat = False
     ready = False
-    Energy = 10
-    energy = 10
+    Energy = 20
+    energy = Energy
     geneSpeed = 1
     chances = {
-        "speed": 25
+        "speed": 100
     }
     size = 10
     speedtick = 3
-    wasStep = []
 
     def __init__(self, n, m, genes=None):
         if genes:
             self.geneSpeed = genes["speed"]
             self.Energy = genes["energy"]
             self.energy = self.Energy
+        self.eat = [0] * int(1 + abs(self.Energy - 1) / 10)
         if randint(0, 1):
             self.x = (n - 1) * randint(0, 1)
             self.y = randint(1, n - 2)
@@ -59,14 +63,14 @@ class Dude:
             ((self.x + 0.75) * size, (self.y + 0.75) * size)
         ))
 
-    def move(self, a):
+    def move(self):
         if self.speedtick != 0:
             self.speedtick -= 1
         else:
             self.angle = self.angles[randint(0, 7)]
             self.speedtick = 3
         x, y = self.x + self.angle[0], self.y + self.angle[1]
-        if (not self.eat or min(self.x, N - 1 - self.x, self.y, N - 1 - self.y) < self.energy) and not self.ready:
+        if min(self.x, N - 1 - self.x, self.y, N - 1 - self.y) < self.energy and not self.ready:
             k = randint(0, 1)
             if x <= 0:
                 self.energy -= k
@@ -118,10 +122,10 @@ class Dude:
     def reply(self, n, a):
         if self.ready:
             k = randint(0, 100)
-            m = randint(-10, 10) / 100 if k < self.chances["speed"] else 0
+            m = randint(-5, 5) / 100 if k < self.chances["speed"] else 0
             genes = {
                 "speed": self.geneSpeed + m,
-                "energy": self.Energy + m * 100
+                "energy": self.Energy + int(m * 100)
             }
             a.append(Dude(n, self.map, genes))
 
@@ -134,10 +138,10 @@ def sort(A):
     sort(R)
     i = m = k = 0
     while m < len(L) and k < len(R):
-        if L[m][0] < R[k][0] or (L[m][0] == R[k][0] and L[m][1] <= R[k][1]):
+        if L[m] < R[k]:
             A[i] = L[m]
             m += 1
-        elif L[m][0] > R[k][0] or (L[m][0] == R[k][0] and R[k][1] <= L[m][1]):
+        else:
             A[i] = R[k]
             k += 1
         i += 1
@@ -148,19 +152,19 @@ def newDay(food, n, dudes):
     for dude in dudes:
         dude.energy = dude.Energy
         dude.ready = False
-        dude.eat = False
+        dude.eat = [0] * int(1 + abs(dude.Energy - 1) / 10)
     for i in range(n):
         food[i] = (randint(1, N - 2), randint(1, N - 2))
 
 
-def runDay(a, dudes, food):  # ToDo
+def runDay(dudes, food):
     done = True
     for dude in dudes:
-        dude.move(a)
+        dude.move()
         if (dude.x, dude.y) in food:
             food[food.index((dude.x, dude.y))] = (-1, -1)
-            if not dude.eat:
-                dude.eat = True
+            if not isfull(dude.eat):
+                dude.eat[dude.eat.index(0)] = 1
             else:
                 dude.ready = True
         if (dude.energy > 0 and not dude.ready) or (dude.ready and not (dude.x in (0, N - 1) or dude.y in (0, N - 1))):
@@ -168,9 +172,9 @@ def runDay(a, dudes, food):  # ToDo
     return done
 
 
-def endDay(dudes):  # ToDo
+def endDay(dudes):
     for dude in dudes.copy():
-        if not dude.eat:
+        if sum(dude.eat) / len(dude.eat) < randint(0, 99) / 100:
             dudes.remove(dude)
         elif dude.ready:
             dude.reply(N, dudes)
@@ -204,11 +208,12 @@ def showState(dudes, foods):
         sc.blit(font(round(s/len(dudes), 4)), (N * size + 15, 15))
     sc.blit(font(f"dudes count: {len(dudes)}"), (N * size + 15, 45))
     sc.blit(font(f"food count: {len(foods)}"), (N * size + 125, 15))
+    graphic([dude.Energy for dude in dudes])
 
 
-N = 20
+N = 23
 size = 30
-showPlace = 350
+showPlace = 600
 
 scs = N * size
 sc = pg.display.set_mode((scs+showPlace, scs))
@@ -216,15 +221,15 @@ pg.display.set_caption("simulacrum")
 
 area = [[Sector(x, y, green) for x in range(N)] for y in range(N)]
 
-foodN = 50
+foodN = 110
 food = [0] * foodN
 
-frameRate = 18
+frameRate = 8
+leftFrame = frameRate
 
 persons = 15
 population = [Dude(N, area) for i in range(10)]
 newDay(food, foodN, population)
-
 
 draw(area, population, food)
 
@@ -233,13 +238,13 @@ doneDay = False
 done = False
 while not done:
     if not pause and not doneDay:
-        frameRate -= 1
-        doneDay = runDay(area, population, food)
-        showState(population, food)
-        if frameRate == 0:
+        leftFrame -= 1
+        doneDay = runDay(population, food)
+        if leftFrame == 0:
             draw(area, population, food)
-            frameRate = 4
+            leftFrame = frameRate
     if doneDay:
+        showState(population, food)
         endDay(population)
         newDay(food, foodN, population)
         doneDay = False
@@ -250,6 +255,6 @@ while not done:
             if e.key == pg.K_SPACE:
                 pause = not pause
             if e.key == pg.K_TAB:
-                population = [Dude(N, area)]
+                population = [Dude(N, area) for i in range(10)]
     pg.display.update()
 pg.quit()
