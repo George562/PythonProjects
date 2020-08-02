@@ -3,14 +3,14 @@ import pygame as pg
 pg.init()
 
 # colors
-black = (0, 0, 0)
-blue = (0, 0, 255)
-green = (0, 255, 0)
-sea = (0, 255, 255)
-red = (255, 0, 0)
-purple = (255, 0, 255)
-yellow = (255, 255, 0)
-white = (255, 255, 255)
+black  = (  0,   0,   0)
+blue   = (  0,   0, 255)
+green  = (  0, 255,   0)
+sea    = (  0, 255, 255)
+red    = (255,   0,   0)
+purple = (255,   0, 255)
+yellow = (255, 255,   0)
+white  = (255, 255, 255)
 
 My_fonts = {}  # used fonts
 
@@ -21,19 +21,27 @@ def font_return(size, text, color=white, font='verdana'):
     return My_fonts[font][(size - 5) % 41].render(str(text), True, color)
 
 
+def zoom(arr, x, y, k):
+    for i in range(len(arr)):
+        arr[i] = (arr[i][0] - x) * k + x, (arr[i][1] - y) * k + y, *arr[i][2:]
+
+
+motion = (lambda arr, rel: list(map(lambda i: (i[0] + rel[0], i[1] + rel[1]), arr)))
+
+
 class Slider:
-    h = 20  # height
-    rad = 10  # radius
     bg = yellow  # background
     l_c = white  # line color
     c_c = red  # circle color
 
-    def __init__(self, win, w, x, y, pos, start, stop, step, name=''):
+    def __init__(self, win, w, x, y, pos, start, stop, step, name='', h=20, rad=10):
         self.win = win  # place for draw
         self.name = font_return(18, name) if name != '' else None
         self.x = x  # x coordinate
         self.y = y  # y coordinate
         self.w = w  # width
+        self.h = h  # height
+        self.rad = rad
         self.scalar = self.x + int((self.w - 10) * (pos - start) / (stop - start)) + 5  # pos of slider
         self.value = pos  # present value
         self.start = start  # minimum value
@@ -120,3 +128,36 @@ class Entry:
             if pg.mouse.get_pressed()[0]:
                 Entry.actTyp = self
                 self.value = 0
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def dist(self, other):
+        return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        if type(other) == float or type(other) == int:
+            return Point(self.x * other, self.y * other)
+
+    def __truediv__(self, other):
+        if type(other) == float or type(other) == int:
+            return Point(self.x / other, self.y / other)
+
+    def __neg__(self):
+        return Point(-self.x, -self.y)
+
+    def __str__(self):
+        return f'({self.x}; {self.y})'
+
+    def __int__(self):
+        self.x, self.y = self.x // 1, self.y // 1
+        return self
