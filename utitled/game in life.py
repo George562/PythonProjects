@@ -1,87 +1,105 @@
-import pygame
+import pygame as pg
+
+pg.init()
+
+white  = (200, 200, 200)
+red    = (255,   0,   0)
+lwhite = (255, 255, 255)
+lred   = (255, 100, 100)
+gray   = (100, 100, 100)
+bred   = (150,   0,   0)
 
 
-def filling_red(x=0, y=0, fill=True):
-    pos = pygame.mouse.get_pos()
-    x, y = pos[0]-pos[0] % c_s, pos[1]-pos[1] % c_s
-    if fill and [x, y] not in f_cell:
-        f_cell.append([x, y])
-        pygame.draw.rect(screen, red, [x+1, y+1, c_s-1, c_s-1])
-        pygame.display.update()
-    elif not fill and [x, y] in f_cell:
-        f_cell.remove([x, y])
-        pygame.draw.rect(screen, white, [x+1, y+1, c_s-1, c_s-1])
-        pygame.display.update()
+def draw(pos, fill=True):
+    x, y = pos[0] * size, pos[1] * size
+    pg.draw.rect(sc, red if fill else white, (x, y, size, size))
+    pg.draw.rect(sc, lred if fill else lwhite, (x, y, size, 2))
+    pg.draw.polygon(sc, bred if fill else gray, ((x, y), (x, y + size), (x + 1, y + size), (x + 2, y + 2)))
 
 
-def searching(c, old_c, m=0):
-    if [(c[0]+c_s) if c[0] < top else 0, c[1]] in old_c:  # справа
-        m += 1
-    if [(c[0]-c_s) if c[0] > 0 else top, c[1]] in old_c:  # слева
-        m += 1
-    if [c[0], (c[1]+c_s) if c[1] < top else 0] in old_c:  # снизу
-        m += 1
-    if [c[0], (c[1]-c_s) if c[1] > 0 else top] in old_c:  # сверху
-        m += 1
-    if [(c[0]+c_s) if c[0] < top else 0, (c[1]+c_s) if c[1] < top else 0] in old_c:  # справа снизу
-        m += 1
-    if [(c[0]+c_s) if c[0] < top else 0, (c[1]-c_s) if c[1] > 0 else top] in old_c:  # справа сверху
-        m += 1
-    if [(c[0]-c_s) if c[0] > 0 else top, (c[1]+c_s) if c[1] < top else 0] in old_c:  # слева снизу
-        m += 1
-    if [(c[0]-c_s) if c[0] > 0 else top, (c[1]-c_s) if c[1] > 0 else top] in old_c:  # слева сверху
-        m += 1
-    return m
+class Dude:
+    N = 0
+    wasN = 0
+    alive = False
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        draw((x, y), self.alive)
+
+    def born(self):
+        if not self.alive:
+            draw((self.x, self.y))
+        self.alive = True
+
+    def kill(self):
+        if self.alive:
+            draw((self.x, self.y), False)
+        self.alive = False
 
 
-def play():
-    for cell in g_map:
-        search = searching(cell, old_f_cell)
-        if cell not in old_f_cell:
-            if search == 3:  # add cell
-                f_cell.append(cell)
-                pygame.draw.rect(screen, red, [cell[0]+1, cell[1]+1, c_s-1, c_s-1])
-        else:
-            if search < 2 or search > 3:  # death of cell
-                f_cell.remove(cell)
-                pygame.draw.rect(screen, white, [cell[0]+1, cell[1]+1, c_s-1, c_s-1])
-    pygame.display.update()
+def play(a, n):
+    update(a, n)
+    for y in range(n):
+        for x in range(n):
+            if a[y][x].N == 3:
+                a[y][x].born()
+            elif a[y][x].N != 2:
+                a[y][x].kill()
 
 
-white = (200, 200, 200)
-black = (0, 0, 0)
-red = (255, 0, 0)
+def find(a, d, n):
+    for dy, dx in (0, 1), (1, -1), (1, 0), (1, 1):
+        if a[(d.y + dy) % n][(d.x + dx) % n].alive:
+            d.wasN += 1
+        if d.alive:
+            a[(d.y + dy) % n][(d.x + dx) % n].wasN += 1
 
-old_f_cell = []  # old fill cells
-f_cell = []  # fill cells
-n = 30  # number cells in line/column
-c_s = 25  # cell size
-top = c_s*(n-1)
-height = width = c_s*n
-clock = pygame.time.Clock()
-g_map = [[i*c_s, j*c_s] for i in range(n+1) for j in range(n+1)]  # game map
-pygame.init()
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption('игра в жизнь')
-screen.fill(white)
-for k in range(1, n+1):
-    pygame.draw.line(screen, black, [0, k*c_s], [width, k*c_s], 1)
-    pygame.draw.line(screen, black, [k*c_s, 0], [k*c_s, height], 1)
-    pygame.display.update()
-done = playing = False
+
+def update(a, n):
+    for y in range(1, n):
+        for x in range(1, n):
+            find(a, a[y][x], n)
+            a[y][x].N = a[y][x].wasN
+            a[y][x].wasN = 0
+    for x in range(n):
+        a[0][x].N = a[0][x].wasN
+        a[0][x].wasN = 0
+    for y in range(1, n):
+        a[y][0].N = a[y][0].wasN
+        a[y][0].wasN = 0
+
+
+n = 16
+size = 27
+scs = n * size
+sc = pg.display.set_mode((scs, scs))
+pg.display.set_caption('игра в жизнь, но лучше')
+
+area = [[Dude(x, y) for x in range(n)] for y in range(n)]
+
+clock = pg.time.Clock()
+pause = True
+done = False
 while not done:
-    if pygame.mouse.get_pressed()[0]:
-        filling_red()
-    elif pygame.mouse.get_pressed()[2]:
-        filling_red(fill=False)
-    if playing:
-        play()
-        clock.tick(25)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    if not pause:
+        play(area, n)
+
+    mpos = pg.mouse.get_pos()
+    mx, my = mpos[0] // size, mpos[1] // size
+    if mx < n and my < n:
+        if pg.mouse.get_pressed()[0]:
+            area[my][mx].born()
+        elif pg.mouse.get_pressed()[2]:
+            area[my][mx].kill()
+
+    for e in pg.event.get():
+        if e.type == pg.QUIT:
             done = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                playing = not playing
-    old_f_cell = f_cell.copy()
-pygame.quit()
+        if e.type == pg.KEYDOWN:
+            if e.key == pg.K_SPACE:
+                pause = not pause
+            if e.key == pg.K_TAB:
+                area = [[Dude(x, y) for x in range(n)] for y in range(n)]
+    pg.display.update()
+pg.quit()
