@@ -1,10 +1,9 @@
-﻿from PIL import Image
+from PIL import Image
 import pygame
 import os
-import tkinter as tk
 pygame.init()
-root = tk.Tk()
-size = (root.winfo_screenwidth(), root.winfo_screenheight())  #размер экрана
+d_info = pygame.display.Info()
+size = (d_info.current_w, d_info.current_h)  # размер экрана
 
 
 def change_image(name, size):  # создаём копию изображения с отношением сторон и размерами как экран устройства
